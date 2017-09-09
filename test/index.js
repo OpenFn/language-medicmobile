@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
 import nock from 'nock';
-import ClientFixtures, { fixtures } from './ClientFixtures'
+import { fixtures } from './Fixtures'
 
 import Adaptor from '../src';
 const { execute, event, dataElement, get } = Adaptor;
@@ -42,40 +42,40 @@ describe("execute", () => {
   })
 })
 
-describe("createEntity", () => {
-
-  before(() => {
-     nock('https://play.http.org')
-       .get('/demo/api/events')
-       .reply(200, { foo: 'bar' });
-  })
-
-  it("calls the callback", () => {
-    let state = {
-      configuration: {
-        username: "hello",
-        password: "there",
-        baseUrl: 'https://play.http.org/demo'
-      }
-    };
-
-    return execute(
-      get("api/events", {
-        callback: (response, state) => {
-          return { ...state, references: [response] }
-        },
-        username: null
-      })
-    )(state)
-    .then((state) => {
-      let responseBody = state.references[0].response.body
-
-      // Check that the eventData made it's way to the request as a string.
-      expect(responseBody).
-        to.eql({foo: 'bar'})
-
-    })
-
-  })
-
-})
+// describe("createEntity", () => {
+//
+//   before(() => {
+//      nock('https://play.http.org')
+//        .get('/demo/api/events')
+//        .reply(200, { foo: 'bar' });
+//   })
+//
+//   it("calls the callback", () => {
+//     let state = {
+//       configuration: {
+//         username: "hello",
+//         password: "there",
+//         baseUrl: 'https://play.http.org/demo'
+//       }
+//     };
+//
+//     return execute(
+//       get("api/events", {
+//         callback: (response, state) => {
+//           return { ...state, references: [response] }
+//         },
+//         username: null
+//       })
+//     )(state)
+//     .then((state) => {
+//       let responseBody = state.references[0].response.body
+//
+//       // Check that the eventData made it's way to the request as a string.
+//       expect(responseBody).
+//         to.eql({foo: 'bar'})
+//
+//     })
+//
+//   })
+//
+// })

@@ -1,8 +1,7 @@
+/** @module Adaptor */
 import { execute as commonExecute, expandReferences } from 'language-common';
 import request from 'request';
-import { resolve as resolveUrl } from 'url';
-
-/** @module Adaptor */
+import queryString from 'query-string';
 
 /**
  * Execute a sequence of operations.
@@ -29,48 +28,31 @@ export function execute(...operations) {
 }
 
 
-export function changesApi(query) {
+export function changesApi(params) {
+
+  function assembleError({ response, error }) {
+    if (response && ([200,201,202,204].indexOf(response.statusCode) > -1)) return false;
+    if (error) return error;
+    return new Error(`Server responded with ${response.statusCode}:\n ${response.body}`)
+  }
 
   return state => {
 
-    function assembleError({ response, error }) {
-      if (response && ([200,201,202,204].indexOf(response.statusCode) > -1)) return false;
-      if (error) return error;
-      return new Error(`Server responded with ${response.statusCode}`)
-    }
+    const { server, db, username, password } = state.configuration;
+    const query = queryString.stringify(expandReferences(params)(state));
 
-    const { server, username, password } = state.configuration;
-    const cursor = state.cursor || filter.afterDate;
+    const baseUrl = `${server}/${db}/_changes`
+    const url = (query ? `${baseUrl}?${query}` : baseUrl)
 
-    const ternaryQuery = query || {};
-
-    // const selectors = ( ternaryQuery.fields ? `$select=${query.fields.join(',')}` : null );
-    // const orderBy = ( ternaryQuery.orderBy ? `$orderby=${query.orderBy.field} ${query.orderBy.direction}` : null );
-    const filter = ( ternaryQuery.filter ? `$filter=${query.filter}` : null );
-    // const limit = ( ternaryQuery.limit ?  query.limit : 0 );
-
-    const queryUrl = [selectors, orderBy, filter]
-                      .filter( i => {
-                        return i != null
-                      })
-                      .join('&');
-
-    const url = `${server}/changes`
-    const fullUrl = ( queryUrl ? `${url}?${filter}` : url );
-
-    console.log("Full URL: " + fullUrl);
+    console.log("Performing GET on:" + url);
 
     const headers = {
       'Content-Type': 'application/json',
-      'Authorization': accessToken
+      'accept': 'application/json'
     };
 
     return new Promise((resolve, reject) => {
-      request.get ({
-        url: fullUrl,
-        json: body,
-        headers
-      }, function(error, response, body){
+      request.get ({ url, headers }, function(error, response, body){
         error = assembleError({response, error})
         if(error) {
           reject(error);
@@ -83,7 +65,7 @@ export function changesApi(query) {
     .then((data) => {
       const nextState = { ...state, response: { body: data } };
       if (data.length) {
-        // TODO: figure out the appropriate cursor id.
+        // TODO: figure out the appropriate cursor id...
         nextState.cursor = data[data.length-1].id
       }
       return nextState;
@@ -93,7 +75,5 @@ export function changesApi(query) {
 
 };
 
-export {
-  field, fields, sourceValue, alterState, each, merge, dataPath, dataValue,
-  lastReferenceValue
-} from 'language-common';
+export { field, fields, sourceValue, alterState, each, merge, dataPath,
+  dataValue, lastReferenceValue } from 'language-common';
