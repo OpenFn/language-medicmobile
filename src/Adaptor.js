@@ -33,6 +33,7 @@ export function changesApi(params) {
   function assembleError({ response, error }) {
     if (response && ([200,201,202,204].indexOf(response.statusCode) > -1)) return false;
     if (error) return error;
+    console.log(response);
     return new Error(`Server responded with ${response.statusCode}:\n ${response.body}`)
   }
 
@@ -48,7 +49,7 @@ export function changesApi(params) {
 
     const headers = {
       'Content-Type': 'application/json',
-      'accept': 'application/json'
+      'accept': 'application/json',
     };
 
     return new Promise((resolve, reject) => {
@@ -60,7 +61,7 @@ export function changesApi(params) {
           console.log(body)
           resolve(body);
         }
-      })
+      }).auth(username, password)
     })
     .then((data) => {
       const nextState = { ...state, response: { body: data } };
