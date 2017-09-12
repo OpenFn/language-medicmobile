@@ -17,7 +17,7 @@ We connect to Medic's CouchDB api.
 {
   "configuration": {
     "server": "https://standard.app.medicmobile.org",
-    "db": "db",
+    "db": "medic",
     "username": "something",
     "password": "secret"
   }
@@ -27,11 +27,12 @@ We connect to Medic's CouchDB api.
 #### sample changesApi expression
 ```js
 changesApi({
-  "doc_ids": [123, 456],
-  "filter": "",
+  "limit": 20,
   "include_docs": true,
-  "last-event-id": 789, // potential cursor
-  "since": "2017-09-09" // maybe not as good a cursor as `last-event-id`
+  "doc_ids": ["form:pregnancy_visit"],
+  // "filter": "",
+  // "last-event-id": 789, // potential cursor
+  // "since": "2017-09-09" // maybe not as good a cursor as `last-event-id`
 });
 ```
 
