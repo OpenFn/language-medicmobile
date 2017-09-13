@@ -2,6 +2,7 @@
 import { execute as commonExecute, expandReferences } from 'language-common';
 import request from 'request';
 import queryString from 'query-string';
+import _ from 'lodash';
 
 /**
  * Execute a sequence of operations.
@@ -40,12 +41,15 @@ export function changesApi(params) {
   return state => {
 
     const { server, db, username, password } = state.configuration;
-    const query = queryString.stringify(expandReferences(params)(state));
+    const query = expandReferences(params)(state);
+    const doc_ids = query.doc_ids;
+    const qs = queryString.stringify(_.omit(query, "doc_ids"));
 
     const baseUrl = `${server}/${db}/_changes`
-    const url = (query ? `${baseUrl}?${query}` : baseUrl)
+    const url = (`${baseUrl}?filter=_doc_ids&${qs}`)
 
     console.log("Performing GET on:" + url);
+    console.log("Returning docments: \n  " + doc_ids);
 
     const headers = {
       'Content-Type': 'application/json',
@@ -53,12 +57,16 @@ export function changesApi(params) {
     };
 
     return new Promise((resolve, reject) => {
-      request.get ({ url, headers }, function(error, response, body){
+      request.post ({
+        url,
+        headers,
+        json: { doc_ids }
+      }, function(error, response, body){
         error = assembleError({response, error})
         if(error) {
           reject(error);
         } else {
-          console.log(body)
+          console.log(JSON.stringify(body, null, 2))
           resolve(body);
         }
       }).auth(username, password)
