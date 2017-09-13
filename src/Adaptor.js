@@ -67,6 +67,7 @@ export function changesApi(params) {
           reject(error);
         } else {
           console.log(JSON.stringify(body, null, 2))
+          // TODO: consider converting XML attachments to JSON.
           resolve(body);
         }
       }).auth(username, password)
