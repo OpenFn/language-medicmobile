@@ -46,10 +46,10 @@ export function changesApi(params) {
     const qs = queryString.stringify(_.omit(query, "doc_ids"));
 
     const baseUrl = `${server}/${db}/_changes`
-    const url = (`${baseUrl}?filter=_doc_ids&${qs}`)
+    const url = (doc_ids ? `${baseUrl}?filter=_doc_ids&${qs}` : `${baseUrl}?${qs}`)
 
-    console.log("Performing GET on:" + url);
-    console.log("Returning docments: \n  " + doc_ids);
+    console.log("\x1b[33m%s\x1b[0m", "Performing GET on:" + url);
+    console.log("Fetching docments: [\n  " + doc_ids + "\n]");
 
     const headers = {
       'Content-Type': 'application/json',
@@ -66,8 +66,8 @@ export function changesApi(params) {
         if(error) {
           reject(error);
         } else {
-          console.log(JSON.stringify(body, null, 2))
-          // TODO: consider converting XML attachments to JSON.
+          console.log("\x1b[32m%s\x1b[0m", `Success ✓`)
+          console.log(JSON.stringify(body, null, 2));
           resolve(body);
         }
       }).auth(username, password)
