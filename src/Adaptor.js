@@ -18,8 +18,7 @@ import _ from 'lodash';
  */
 export function execute(...operations) {
   const initialState = {
-    references: [],
-    data: null
+    data: []
   }
 
   return state => {
@@ -67,21 +66,42 @@ export function changesApi(params) {
           reject(error);
         } else {
           console.log("\x1b[32m%s\x1b[0m", `Success ✓`)
-          console.log(JSON.stringify(body, null, 2));
+          // console.log(JSON.stringify(body, null, 2));
           resolve(body);
         }
       }).auth(username, password)
     })
     .then((data) => {
-      const nextState = { ...state, response: { body: data } };
-      if (data.length) {
-        // TODO: figure out the appropriate cursor id...
-        nextState.cursor = data[data.length-1].id
-      }
+      const nextState = { ...state, data: [ ...state.data, data ] }
+      // if (data.length) {
+      //   // TODO: figure out the appropriate cursor id...
+      //   nextState.cursor = data[data.length-1].id
+      // }
       return nextState;
     })
 
   };
+
+};
+
+export function pickFormData(formId) {
+
+  return state => {
+
+    console.log(state.configuration);
+    console.log(state.data);
+
+    const myFormData = state.data[0].results.filter(item => {
+      return item.doc.form == formId
+      // return item.doc.type == "info"
+    })
+    .map(item => {
+      return item.doc.fields
+    });
+
+    const nextState = { ...state, data: [ ...state.data, myFormData ] }
+    return nextState;
+  }
 
 };
 
