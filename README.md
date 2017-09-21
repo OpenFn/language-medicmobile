@@ -26,13 +26,14 @@ We connect to Medic's CouchDB api.
 
 #### sample MedicMobile expression expression
 ```js
+// get all the changes...
 changesApi({
   "include_docs": true,
-  "limit": 500,
-  // "last-event-id": 789, // this is used as a database cursor
+  // IRL, we'll use a cursor so this doesn't take FOREVER!
+  // "last-event-id": 789,
 });
 
-// Discards everything in Medic's response except the field data for a form.
+// Picks out the field data for a given formId.
 pickFormData("pregnancy");
 ```
 

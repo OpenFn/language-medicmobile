@@ -28,7 +28,7 @@ export function execute(...operations) {
 }
 
 
-export function changesApi(params) {
+export function changesApi(params, callback) {
 
   function assembleError({ response, error }) {
     if (response && ([200,201,202,204].indexOf(response.statusCode) > -1)) return false;
@@ -77,6 +77,7 @@ export function changesApi(params) {
       //   // TODO: figure out the appropriate cursor id...
       //   nextState.cursor = data[data.length-1].id
       // }
+      if (callback) return callback(nextState);
       return nextState;
     })
 
@@ -87,19 +88,14 @@ export function changesApi(params) {
 export function pickFormData(formId) {
 
   return state => {
-
-    console.log(state.configuration);
-    console.log(state.data);
-
     const myFormData = state.data[0].results.filter(item => {
-      return item.doc.form == formId
-      // return item.doc.type == "info"
+      if (item.doc.form) return item.doc.form == formId;
     })
     .map(item => {
       return item.doc.fields
     });
 
-    const nextState = { ...state, data: [ ...state.data, myFormData ] }
+    const nextState = { ...state, data: myFormData }
     return nextState;
   }
 
