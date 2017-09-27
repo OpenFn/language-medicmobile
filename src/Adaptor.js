@@ -1,5 +1,5 @@
 /** @module Adaptor */
-import { execute as commonExecute, expandReferences } from 'language-common';
+import { execute as commonExecute, expandReferences, composeNextState } from 'language-common';
 import request from 'request';
 import queryString from 'query-string';
 import _ from 'lodash';
@@ -18,7 +18,9 @@ import _ from 'lodash';
  */
 export function execute(...operations) {
   const initialState = {
-    data: []
+    data: null,
+    references: [],
+    cursor: null
   }
 
   return state => {
@@ -42,8 +44,17 @@ export function changesApi(params, callback) {
     const { server, db, username, password } = state.configuration;
     const query = expandReferences(params)(state);
     const doc_ids = query.doc_ids;
-    const qs = queryString.stringify(_.omit(query, "doc_ids"));
+    const scrubbedQuery = _.omit(query, [
+        // Ignore last-event-id if state has a cursor...
+        "doc_ids", (state.cursor ? "last-event-id" : null)
+    ])
 
+    if (state.cursor) {
+       // add the cursor...
+      scrubbedQuery["last-event-id"] = state.cursor
+    }
+
+    const qs = queryString.stringify(scrubbedQuery)
     const baseUrl = `${server}/${db}/_changes`
     const url = (doc_ids ? `${baseUrl}?filter=_doc_ids&${qs}` : `${baseUrl}?${qs}`)
 
@@ -66,17 +77,13 @@ export function changesApi(params, callback) {
           reject(error);
         } else {
           console.log("\x1b[32m%s\x1b[0m", `Success ✓`)
-          // console.log(JSON.stringify(body, null, 2));
           resolve(body);
         }
       }).auth(username, password)
     })
-    .then((data) => {
-      const nextState = { ...state, data: [ ...state.data, data ] }
-      // if (data.length) {
-      //   // TODO: figure out the appropriate cursor id...
-      //   nextState.cursor = data[data.length-1].id
-      // }
+    .then((response) => {
+      state.cursor = response.last_seq
+      const nextState = composeNextState(state, response)
       if (callback) return callback(nextState);
       return nextState;
     })
@@ -88,14 +95,14 @@ export function changesApi(params, callback) {
 export function pickFormData(formId) {
 
   return state => {
-    const myFormData = state.data[0].results.filter(item => {
+    const myFormData = state.data.response.results.filter(item => {
       if (item.doc.form) return item.doc.form == formId;
     })
     .map(item => {
       return item.doc.fields
     });
 
-    const nextState = { ...state, data: myFormData }
+    const nextState = composeNextState(state, myFormData)
     return nextState;
   }
 
