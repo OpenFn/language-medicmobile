@@ -1,6 +1,6 @@
 {
   "name": "language-medicmobile",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A Medic Mobile language pack for OpenFn",
   "main": "lib/index.js",
   "scripts": {

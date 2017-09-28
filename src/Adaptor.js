@@ -113,7 +113,7 @@ export function changesApi(params, callback) {
     const url = (doc_ids ? `${baseUrl}?filter=_doc_ids&${qs}` : `${baseUrl}?${qs}`)
 
     console.log("Performing request on: " + url);
-    console.log("Document filter: [\n  " + doc_ids + "\n]");
+    console.log("Applying document filter: [\n  " + doc_ids + "\n]");
 
     const headers = {
       'Content-Type': 'application/json',
@@ -130,13 +130,18 @@ export function changesApi(params, callback) {
         if(error) {
           reject(error);
         } else {
-          console.log('Success ✓')
+          console.log('Request Success ✓')
           resolve(body);
         }
       }).auth(username, password)
     })
     .then((response) => {
-      state.cursor = response.last_seq
+      if (! _.isEmpty(response.results) ) {
+        state.cursor = response.last_seq
+        console.log(`Set \"cursor\" for next run to: ${response.last_seq}.`)
+      } else {
+        console.log(`No new results. Cursor will remain at ${state.cursor}.`)
+      }
       const nextState = composeNextState(state, response)
       if (callback) return callback(nextState);
       return nextState;
@@ -158,12 +163,14 @@ export function changesApi(params, callback) {
 export function pickFormData(formId) {
 
   return state => {
-    const myFormData = state.data.response.results.filter(item => {
-      if (item.doc.form) return item.doc.form == formId;
-    })
-    .map(item => {
-      return item.doc.fields
-    });
+    var myFormData = [];
+    if (state.data.response.results) {
+      myFormData = state.data.response.results.filter(item => {
+        if (item.doc.form) return item.doc.form == formId;
+      }).map(item => {
+        return item.doc.fields
+      });
+    };
 
     return {
       ...state,
