@@ -29,7 +29,61 @@ export function execute(...operations) {
 
 }
 
+/**
+ * Access form submissions and post them as JSON.
+ * @public
+ * @example
+ * fetchSubmissions(
+     'pregnancy',
+     '2017-05-06',
+     'https://www.openfn.org/inbox/abc-123-xyz'
+ * )
+ * @function
+ * @param {string} formId - Query parameters
+ * @param {string} lastSeqId - Starting sequence id
+ * @param {string} postUrl - Inbox to post form data
+ * @returns {Operation}
+ */
+ export function fetchSubmissions(formId, params, postUrl) {
+   return state => {
 
+     params.include_docs = true;
+     return changesApi(params)(state)
+     .then((state) => {
+       return pickFormData(formId)(state)
+     })
+     .then((state) => {
+       const submissions = state.data.submissions;
+       for (var i = 0, len = submissions.length; i < len; i++) {
+         request.post({
+           url: postUrl,
+           json: submissions[i]
+         })
+         console.log(`Posted submission ${submissions[i].meta.instanceID} ✓`);
+       }
+       return state
+     })
+     .then((state) => {
+       // clean state for next run
+       state.data = {}
+       state.references = []
+       console.log("Fetching submissions succeeded ✓")
+       return state;
+     })
+
+   }
+ }
+
+/**
+ * Access the CouchDB Changes API
+ * @public
+ * @example
+ * changesApi(params, callback)
+ * @function
+ * @param {object} params - Query parameters
+ * @param {function} callback - (Optional) Callback function
+ * @returns {Operation}
+ */
 export function changesApi(params, callback) {
 
   function assembleError({ response, error }) {
@@ -92,6 +146,15 @@ export function changesApi(params, callback) {
 
 };
 
+/**
+ * Select submissions for a specific form
+ * @public
+ * @example
+ * pickFormData(formId)
+ * @function
+ * @param {string} formId - The form ID.
+ * @returns {Operation}
+ */
 export function pickFormData(formId) {
 
   return state => {
@@ -102,11 +165,23 @@ export function pickFormData(formId) {
       return item.doc.fields
     });
 
-    const nextState = composeNextState(state, myFormData)
-    return nextState;
+    return {
+      ...state,
+      data: { submissions: myFormData },
+      references: [ ...state.references, state.data ]
+    }
   }
 
 };
 
-export { field, fields, sourceValue, alterState, each, merge, dataPath,
-  dataValue, lastReferenceValue } from 'language-common';
+export {
+  alterState,
+  dataPath,
+  dataValue,
+  each,
+  field,
+  fields,
+  lastReferenceValue,
+  merge,
+  sourceValue
+} from 'language-common';

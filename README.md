@@ -24,12 +24,22 @@ We connect to Medic's CouchDB api.
 }
 ```
 
-#### sample MedicMobile expression expression
+#### sample fetchSubmissions expression
+```js
+fetchSubmissions(
+  "pregnancy", // formId
+  { "last-event-id": 334 }, // params, last-event-id will be replaced by cursor
+  "http://localhost:4000/inbox/abc-123-xyz" // postUrl
+);
+```
+
+#### sample changesApi and pickFormData usage
 ```js
 // get all the changes...
 changesApi({
   "include_docs": true,
-  // IRL, we'll use a cursor so this doesn't take FOREVER!
+  // This only gets used the first time the job is run.
+  // Subsequent runs take the lastSeq value as their cursor.
   // "last-event-id": 789,
 });
 
