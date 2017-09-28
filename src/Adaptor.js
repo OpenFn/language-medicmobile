@@ -34,13 +34,13 @@ export function execute(...operations) {
  * @public
  * @example
  * fetchSubmissions(
-     'pregnancy',
-     '2017-05-06',
-     'https://www.openfn.org/inbox/abc-123-xyz'
- * )
+ *   "pregnancy", // formId
+ *   { "last-event-id": 334 }, // params
+ *   "http://localhost:4000/inbox/abc-123-xyz" // postUrl
+ * );
  * @function
  * @param {string} formId - Query parameters
- * @param {string} lastSeqId - Starting sequence id
+ * @param {object} params - Starting sequence id
  * @param {string} postUrl - Inbox to post form data
  * @returns {Operation}
  */
