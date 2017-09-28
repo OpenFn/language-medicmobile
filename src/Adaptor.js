@@ -112,8 +112,8 @@ export function changesApi(params, callback) {
     const baseUrl = `${server}/${db}/_changes`
     const url = (doc_ids ? `${baseUrl}?filter=_doc_ids&${qs}` : `${baseUrl}?${qs}`)
 
-    console.log("\x1b[33m%s\x1b[0m", "Performing GET on:" + url);
-    console.log("Fetching docments: [\n  " + doc_ids + "\n]");
+    console.log("Performing request on: " + url);
+    console.log("Document filter: [\n  " + doc_ids + "\n]");
 
     const headers = {
       'Content-Type': 'application/json',
@@ -130,7 +130,7 @@ export function changesApi(params, callback) {
         if(error) {
           reject(error);
         } else {
-          console.log("\x1b[32m%s\x1b[0m", `Success ✓`)
+          console.log('Success ✓')
           resolve(body);
         }
       }).auth(username, password)
