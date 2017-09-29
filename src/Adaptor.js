@@ -59,7 +59,7 @@ export function execute(...operations) {
            url: postUrl,
            json: submissions[i]
          })
-         console.log(`Posted submission ${submissions[i].meta.instanceID} ✓`);
+         console.log(`Posted submission ${submissions[i].fields.meta.instanceID} ✓`);
        }
        return state
      })
@@ -138,7 +138,7 @@ export function changesApi(params, callback) {
     .then((response) => {
       if (! _.isEmpty(response.results) ) {
         state.cursor = response.last_seq
-        console.log(`Set \"cursor\" for next run to: ${response.last_seq}.`)
+        console.log(`Set cursor for next run to: ${response.last_seq}.`)
       } else {
         console.log(`No new results. Cursor will remain at ${state.cursor}.`)
       }
@@ -168,7 +168,15 @@ export function pickFormData(formId) {
       myFormData = state.data.response.results.filter(item => {
         if (item.doc.form) return item.doc.form == formId;
       }).map(item => {
-        return item.doc.fields
+        const { _id, fields, form, type, reported_date, contact } = item.doc;
+        return {
+          _id,
+          form,
+          type,
+          reported_date,
+          contact,
+          fields
+        };
       });
     };
 
