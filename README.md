@@ -2,6 +2,7 @@ Language Medic Mobile [![Build Status](https://travis-ci.org/OpenFn/language-med
 =============
 
 Language Pack for building expressions and operations to make calls to the Medic Mobile API.  
+**For an overview of Medic's database, check out [Medic's DB Schema v2](https://github.com/medic/medic-docs/blob/master/development/db-schema.md)**  
 The exported functions in this language package can be executed by [OpenFn/core](https://github.com/OpenFn/core):  
 ```sh
 ../core/lib/cli.js execute -l ./lib/Adaptor -s ./tmp/state.json -e ./tmp/expression.js
