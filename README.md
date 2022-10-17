@@ -14,14 +14,13 @@ Documentation
 
 #### sample configuration
 We connect to Medic's CouchDB api.
+
 ```json
 {
-  "configuration": {
-    "server": "https://standard.app.medicmobile.org",
-    "db": "medic",
-    "username": "something",
-    "password": "secret"
-  }
+  "server": "https://standard.app.medicmobile.org",
+  "db": "medic",
+  "username": "something",
+  "password": "secret"
 }
 ```
 
